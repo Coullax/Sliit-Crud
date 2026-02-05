@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, User, Mail, Phone, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { X, Check, User, Calendar as CalendarIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { type RoundType } from '../types';
@@ -267,10 +267,10 @@ export default function AddCandidateModal({ isOpen, onClose, onSuccess }: AddCan
                                                     disabled={booked}
                                                     onClick={() => !booked && handleSlotSelect(time)}
                                                     className={`text-xs py-1.5 px-1 rounded border transition-all ${booked
-                                                            ? 'bg-slate-100 text-slate-400 border-slate-100 cursor-not-allowed decoration-slate-400 line-through'
-                                                            : isSlotSelected(time)
-                                                                ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                                                                : 'bg-white border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600'
+                                                        ? 'bg-slate-100 text-slate-400 border-slate-100 cursor-not-allowed decoration-slate-400 line-through'
+                                                        : isSlotSelected(time)
+                                                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                                                            : 'bg-white border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600'
                                                         }`}
                                                 >
                                                     {time}
