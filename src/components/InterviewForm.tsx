@@ -67,9 +67,8 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
         }
     }, [techBreakdown, directorBreakdown, roundType]);
 
-
-
     const [candidateStatus, setCandidateStatus] = useState<CandidateStatus>(currentStatus || 'in_progress');
+    const [calculatedAverage, setCalculatedAverage] = useState<number | null>(null);
 
     // Auto-calculate suggested status based on OVERALL score
     useEffect(() => {
@@ -77,27 +76,21 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
         if (!score) return;
 
         const currentScoreVal = parseFloat(score);
-        let overallScore = currentScoreVal;
 
         // Try to find the OTHER round type to average with
         const otherType = roundType === 'technical' ? 'director' : 'technical';
         const otherRound = otherInterviews.find(i => i.round_type === otherType);
 
         if (otherRound) {
-            overallScore = (currentScoreVal + otherRound.score) / 2;
-            // If we have both rounds, we can definitely make a Hired/Rejected decision
-            if (overallScore >= 70) {
-                setCandidateStatus('hired');
-            } else {
-                setCandidateStatus('rejected');
-            }
+            const avg = (currentScoreVal + otherRound.score) / 2;
+            setCalculatedAverage(avg);
+            // If we have both rounds, the process is COMPLETED.
+            setCandidateStatus('completed');
+        } else {
+            // If only one round is present, it's still in progress
+            setCalculatedAverage(null);
+            setCandidateStatus('in_progress');
         }
-
-        // Optional: logic for single round? 
-        // For now, let's strictly follow "based on the marks Overall score from both"
-        // If we only have one round, maybe we don't auto-set to hired/rejected unless user manually picks it?
-        // Or maybe strictly speaking, if it's just one round, it's still In Progress until both are done?
-        // Let's stick to: If we have BOTH, we auto-set. If not, we leave it as is (likely in_progress).
 
     }, [score, roundType, otherInterviews]);
 
@@ -112,7 +105,7 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
             score: parseFloat(score),
             feedback,
             user_id: user.id,
-            details: roundType === 'technical' ? techBreakdown : roundType === 'director' ? directorBreakdown : null
+            details: roundType === 'technical' ? techBreakdown : roundType === 'director' ? directorBreakdown : null,
         };
 
         try {
@@ -176,12 +169,13 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
+
                 {/* Score Breakdowns */}
                 {roundType === 'technical' && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium text-slate-900">Technical Competencies (0-10)</h4>
-                            <span className={`text-sm font-bold ${Number(score) >= 70 ? 'text-green-600' : 'text-slate-600'}`}>
+                            <span className={`text - sm font - bold ${Number(score) >= 70 ? 'text-green-600' : 'text-slate-600'} `}>
                                 Total: {score}%
                             </span>
                         </div>
@@ -209,7 +203,7 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium text-slate-900">Leadership Competencies (0-10)</h4>
-                            <span className={`text-sm font-bold ${Number(score) >= 70 ? 'text-green-600' : 'text-slate-600'}`}>
+                            <span className={`text - sm font - bold ${Number(score) >= 70 ? 'text-green-600' : 'text-slate-600'} `}>
                                 Total: {score}%
                             </span>
                         </div>
@@ -247,16 +241,17 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
                 </div>
 
                 {/* Automated Status Display */}
-                <div className={`p-4 rounded-lg border flex items-center justify-between ${candidateStatus === 'hired' ? 'bg-green-50 border-green-200 text-green-800' :
-                    candidateStatus === 'rejected' ? 'bg-red-50 border-red-200 text-red-800' :
-                        'bg-blue-50 border-blue-200 text-blue-800'
-                    }`}>
+                <div className={`p - 4 rounded - lg border flex items - center justify - between ${candidateStatus === 'completed' ? 'bg-green-50 border-green-200 text-green-800' :
+                    'bg-blue-50 border-blue-200 text-blue-800'
+                    } `}>
                     <div className="flex flex-col">
                         <span className="text-xs font-bold uppercase tracking-wider opacity-80">
                             Resulting Status
                         </span>
                         <span className="font-bold text-lg capitalize">
                             {candidateStatus.replace('_', ' ')}
+                            {candidateStatus === 'completed' && calculatedAverage !== null && calculatedAverage >= 70 && <span className="text-sm ml-2 font-normal text-green-700">(Passed - {calculatedAverage}%)</span>}
+                            {candidateStatus === 'completed' && calculatedAverage !== null && calculatedAverage < 70 && <span className="text-sm ml-2 font-normal text-red-700">(Failed - {calculatedAverage}%)</span>}
                         </span>
                     </div>
                     {candidateStatus === 'in_progress' && (

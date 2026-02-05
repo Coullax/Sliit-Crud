@@ -1,4 +1,4 @@
-export type CandidateStatus = 'in_progress' | 'hired' | 'rejected';
+export type CandidateStatus = 'in_progress' | 'completed';
 
 export interface Candidate {
     id: string;
@@ -22,6 +22,7 @@ export interface Interview {
     feedback: string;
     user_id: string;
     details?: TechnicalScoreBreakdown | DirectorScoreBreakdown;
+    scheduled_at?: string;
 }
 
 export interface TechnicalScoreBreakdown {

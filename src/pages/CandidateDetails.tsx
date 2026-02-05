@@ -90,11 +90,10 @@ export default function CandidateDetails() {
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <h1 className="text-3xl font-bold text-slate-900">{candidate.name}</h1>
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${candidate.status === 'hired' ? 'bg-green-100 text-green-700' :
-                                candidate.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                    'bg-blue-50 text-blue-700'
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${candidate.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                'bg-blue-50 text-blue-700'
                                 }`}>
-                                {candidate.status.replace('_', ' ')}
+                                {candidate.status === 'completed' ? 'Completed' : 'In Progress'}
                             </span>
                         </div>
                         <div className="flex flex-wrap gap-6 text-slate-500 text-sm">
@@ -232,7 +231,6 @@ export default function CandidateDetails() {
                                     </div>
                                     <div className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${interview.score >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                         }`}>
-                                        {interview.score >= 70 ? 'PASSED' : 'FAILED'}
                                     </div>
                                 </div>
 
