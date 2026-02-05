@@ -78,14 +78,12 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
 
         const currentScoreVal = parseFloat(score);
         let overallScore = currentScoreVal;
-        let hasOtherRound = false;
 
         // Try to find the OTHER round type to average with
         const otherType = roundType === 'technical' ? 'director' : 'technical';
         const otherRound = otherInterviews.find(i => i.round_type === otherType);
 
         if (otherRound) {
-            hasOtherRound = true;
             overallScore = (currentScoreVal + otherRound.score) / 2;
             // If we have both rounds, we can definitely make a Hired/Rejected decision
             if (overallScore >= 70) {
@@ -250,8 +248,8 @@ export default function InterviewForm({ candidateId, onSuccess, onCancel, initia
 
                 {/* Automated Status Display */}
                 <div className={`p-4 rounded-lg border flex items-center justify-between ${candidateStatus === 'hired' ? 'bg-green-50 border-green-200 text-green-800' :
-                        candidateStatus === 'rejected' ? 'bg-red-50 border-red-200 text-red-800' :
-                            'bg-blue-50 border-blue-200 text-blue-800'
+                    candidateStatus === 'rejected' ? 'bg-red-50 border-red-200 text-red-800' :
+                        'bg-blue-50 border-blue-200 text-blue-800'
                     }`}>
                     <div className="flex flex-col">
                         <span className="text-xs font-bold uppercase tracking-wider opacity-80">

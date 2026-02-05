@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Candidate } from '../types';
-import { Plus, Search, Phone, Mail } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AddCandidateModal from '../components/AddCandidateModal';
 

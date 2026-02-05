@@ -185,7 +185,7 @@ export default function CandidateDetails() {
                         </div>
                     )}
 
-                    {interviews.map((interview, index) => (
+                    {interviews.map((interview) => (
                         <div key={interview.id} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                             <div className="border-b border-slate-100 bg-slate-50/50 p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
