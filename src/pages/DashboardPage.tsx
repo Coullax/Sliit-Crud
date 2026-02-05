@@ -40,93 +40,116 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-900">Candidates</h2>
-                    <p className="text-slate-500 mt-1">Manage and track candidate progress</p>
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Candidates</h2>
+                    <p className="text-slate-500 text-sm mt-1">Manage pipeline and interviews</p>
                 </div>
 
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
+                    className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
                 >
-                    <Plus size={20} />
+                    <Plus size={16} />
                     Add Candidate
                 </button>
             </div>
 
             {/* Search and Filters */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <input
                         type="text"
-                        placeholder="Search candidates by name or email..."
+                        placeholder="Filter candidates..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 transition-all font-medium"
+                        className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent transition-all"
                     />
                 </div>
             </div>
 
-            {/* Grid */}
+            {/* Kanban Board */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCandidates.map((candidate) => (
-                        <div
-                            key={candidate.id}
-                            onClick={() => navigate(`/candidates/${candidate.id}`)}
-                            className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-blue-100 hover:-translate-y-1 cursor-pointer"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
-                                    {candidate.name.charAt(0)}
-                                </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${candidate.status === 'hired' ? 'bg-green-100 text-green-700' :
-                                    candidate.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                        'bg-blue-50 text-blue-700'
-                                    }`}>
-                                    {candidate.status.replace('_', ' ')}
-                                </span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full overflow-x-auto pb-4">
+                    {/* In Progress Column */}
+                    <div className="flex flex-col bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <h3 className="font-semibold text-slate-700">In Progress</h3>
                             </div>
-
-                            <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">
-                                {candidate.name}
-                            </h3>
-
-                            <div className="space-y-2 mb-6">
-                                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                                    <Mail size={16} />
-                                    {candidate.email}
-                                </div>
-                                {candidate.phone && (
-                                    <div className="flex items-center gap-2 text-slate-500 text-sm">
-                                        <Phone size={16} />
-                                        {candidate.phone}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="pt-4 border-t border-slate-50">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-400">View Details</span>
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <Plus size={16} className="rotate-45 group-hover:rotate-0 transition-transform" />
-                                    </div>
-                                </div>
-                            </div>
+                            <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs font-bold">
+                                {filteredCandidates.filter(c => c.status === 'in_progress').length}
+                            </span>
                         </div>
-                    ))}
-
-                    {filteredCandidates.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-slate-400">
-                            No candidates found. Start by adding one!
+                        <div className="flex-1 space-y-3">
+                            {filteredCandidates
+                                .filter(c => c.status === 'in_progress')
+                                .map(candidate => (
+                                    <CandidateCard key={candidate.id} candidate={candidate} navigate={navigate} />
+                                ))}
+                            {filteredCandidates.filter(c => c.status === 'in_progress').length === 0 && (
+                                <div className="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-300 rounded-lg">
+                                    No active candidates
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
+
+                    {/* Hired Column */}
+                    <div className="flex flex-col bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                <h3 className="font-semibold text-slate-700">Hired</h3>
+                            </div>
+                            <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs font-bold">
+                                {filteredCandidates.filter(c => c.status === 'hired').length}
+                            </span>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                            {filteredCandidates
+                                .filter(c => c.status === 'hired')
+                                .map(candidate => (
+                                    <CandidateCard key={candidate.id} candidate={candidate} navigate={navigate} />
+                                ))}
+                            {filteredCandidates.filter(c => c.status === 'hired').length === 0 && (
+                                <div className="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-300 rounded-lg">
+                                    No hired candidates yet
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Rejected Column */}
+                    <div className="flex flex-col bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                <h3 className="font-semibold text-slate-700">Rejected</h3>
+                            </div>
+                            <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs font-bold">
+                                {filteredCandidates.filter(c => c.status === 'rejected').length}
+                            </span>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                            {filteredCandidates
+                                .filter(c => c.status === 'rejected')
+                                .map(candidate => (
+                                    <CandidateCard key={candidate.id} candidate={candidate} navigate={navigate} />
+                                ))}
+                            {filteredCandidates.filter(c => c.status === 'rejected').length === 0 && (
+                                <div className="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-300 rounded-lg">
+                                    No rejected candidates
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -135,6 +158,36 @@ export default function DashboardPage() {
                 onClose={() => setIsAddModalOpen(false)}
                 onSuccess={fetchCandidates}
             />
+        </div>
+    );
+}
+
+function CandidateCard({ candidate, navigate }: { candidate: Candidate; navigate: (path: string) => void }) {
+    return (
+        <div
+            onClick={() => navigate(`/candidates/${candidate.id}`)}
+            className="group bg-white rounded-lg border border-slate-200 p-4 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer relative"
+        >
+            <div className="flex items-center gap-3 mb-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs ${candidate.status === 'hired' ? 'bg-green-500' :
+                    candidate.status === 'rejected' ? 'bg-red-500' :
+                        'bg-blue-500'
+                    }`}>
+                    {candidate.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-slate-900 truncate text-sm group-hover:text-blue-600 transition-colors">
+                        {candidate.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 truncate">{candidate.email}</p>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
+                <span className="text-[10px] text-slate-400">
+                    {new Date(candidate.created_at).toLocaleDateString()}
+                </span>
+            </div>
         </div>
     );
 }

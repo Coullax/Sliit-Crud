@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Candidate, Interview, RoundType } from '../types';
-import { ArrowLeft, Plus, Trash2, Edit2, Calendar, Check } from 'lucide-react';
-import InterviewModal from '../components/InterviewModal';
+import { ArrowLeft, Trash2, Edit2, Calendar, Plus } from 'lucide-react';
+import InterviewForm from '../components/InterviewForm';
 import EditCandidateModal from '../components/EditCandidateModal';
 
 export default function CandidateDetails() {
@@ -12,10 +12,10 @@ export default function CandidateDetails() {
     const [candidate, setCandidate] = useState<Candidate | null>(null);
     const [interviews, setInterviews] = useState<Interview[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newRoundType, setNewRoundType] = useState<RoundType | undefined>(undefined);
     const [isEditCandidateOpen, setIsEditCandidateOpen] = useState(false);
     const [editingInterview, setEditingInterview] = useState<Interview | undefined>(undefined);
-    const [initialRoundType, setInitialRoundType] = useState<RoundType | undefined>(undefined);
 
     useEffect(() => {
         if (id) fetchData();
@@ -124,172 +124,142 @@ export default function CandidateDetails() {
             </div>
 
             {/* Interview Process Section */}
-            <div>
-                <h2 className="text-xl font-bold text-slate-800 mb-6">Interview Process</h2>
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-slate-800">Interview Process</h2>
 
-                <div className="space-y-4">
-                    {/* 1. Technical Round */}
-                    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">1</div>
-                                <h3 className="text-lg font-bold text-slate-900">Technical Interview</h3>
-                            </div>
-                            {interviews.some(i => i.round_type === 'technical') && (
-                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                                    <Check size={14} /> Completed
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="pl-12 space-y-4">
-                            {interviews.filter(i => i.round_type === 'technical').map(interview => (
-                                <div key={interview.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                                            <Calendar size={14} />
-                                            {new Date(interview.created_at).toLocaleDateString()}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => { setEditingInterview(interview); setInitialRoundType(undefined); setIsModalOpen(true); }}
-                                                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Edit2 size={14} /> Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteInterview(interview.id)}
-                                                className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Trash2 size={14} /> Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <span className="text-sm font-medium text-slate-700">Score: </span>
-                                            <span className={`font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
-                                                {interview.score}/100
-                                            </span>
-                                        </div>
-
-                                        {interview.details && (
-                                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-slate-200">
-                                                {Object.entries(interview.details).map(([key, value]) => (
-                                                    <div key={key} className="flex justify-between items-center text-xs">
-                                                        <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
-                                                        <span className="font-semibold text-slate-700">{typeof value === 'number' ? value + '/10' : value}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        <div className="text-sm text-slate-600">
-                                            <span className="font-medium text-slate-700">Feedback: </span>
-                                            {interview.feedback}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
+                    {!showAddForm && (
+                        <div className="flex gap-3">
                             <button
-                                onClick={() => { setInitialRoundType('technical'); setEditingInterview(undefined); setIsModalOpen(true); }}
-                                className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                onClick={() => { setNewRoundType('technical'); setShowAddForm(true); }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-lg text-sm font-medium transition-all shadow-sm"
                             >
-                                <Plus size={16} />
-                                Add {interviews.some(i => i.round_type === 'technical') ? 'Another ' : ''}Technical Interview
+                                <Plus size={16} className="text-blue-500" />
+                                Add Technical Round
+                            </button>
+                            <button
+                                onClick={() => { setNewRoundType('director'); setShowAddForm(true); }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 rounded-lg text-sm font-medium transition-all shadow-sm"
+                            >
+                                <Plus size={16} className="text-purple-500" />
+                                Add Director Round
                             </button>
                         </div>
+                    )}
+                </div>
+
+                {/* Add New Form Area */}
+                {showAddForm && newRoundType && (
+                    <div className="mb-8">
+                        <InterviewForm
+                            candidateId={id!}
+                            initialRoundType={newRoundType}
+                            currentStatus={candidate.status}
+                            otherInterviews={interviews}
+                            onSuccess={() => { setShowAddForm(false); fetchData(); }}
+                            onCancel={() => setShowAddForm(false)}
+                        />
                     </div>
+                )}
 
-                    {/* 2. Director Round */}
-                    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">2</div>
-                                <h3 className="text-lg font-bold text-slate-900">Director Interview</h3>
-                            </div>
-                            {interviews.some(i => i.round_type === 'director') ? (
-                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                                    <Check size={14} /> Completed
-                                </span>
-                            ) : (
-                                <span className="text-slate-400 text-sm">Not Started</span>
-                            )}
+                {/* Editing Form Area */}
+                {editingInterview && (
+                    <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-blue-100">
+                        <h4 className="text-sm font-bold text-blue-600 mb-2">Editing Interview</h4>
+                        <InterviewForm
+                            candidateId={id!}
+                            existingInterview={editingInterview}
+                            currentStatus={candidate.status}
+                            otherInterviews={interviews.filter(i => i.id !== editingInterview.id)}
+                            onSuccess={() => { setEditingInterview(undefined); fetchData(); }}
+                            onCancel={() => setEditingInterview(undefined)}
+                        />
+                    </div>
+                )}
+
+                <div className="space-y-4">
+                    {interviews.length === 0 && !showAddForm && (
+                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                            <p className="text-slate-500">No interviews recorded yet.</p>
+                            <p className="text-sm text-slate-400">Select a round type above to start.</p>
                         </div>
+                    )}
 
-                        <div className="pl-12">
-                            {interviews.filter(i => i.round_type === 'director').map(interview => (
-                                <div key={interview.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                                            <Calendar size={14} />
-                                            {new Date(interview.created_at).toLocaleDateString()}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => { setEditingInterview(interview); setInitialRoundType(undefined); setIsModalOpen(true); }}
-                                                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Edit2 size={14} /> Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteInterview(interview.id)}
-                                                className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Trash2 size={14} /> Delete
-                                            </button>
-                                        </div>
+                    {interviews.map((interview, index) => (
+                        <div key={interview.id} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                            <div className="border-b border-slate-100 bg-slate-50/50 p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${interview.round_type === 'technical' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                                        }`}>
+                                        {interview.round_type === 'technical' ? 'T' : 'D'}
                                     </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <span className="text-sm font-medium text-slate-700">Score: </span>
-                                            <span className={`font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
-                                                {interview.score}/100
-                                            </span>
-                                        </div>
-
-                                        {interview.details && (
-                                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-slate-200">
-                                                {Object.entries(interview.details).map(([key, value]) => (
-                                                    <div key={key} className="flex justify-between items-center text-xs">
-                                                        <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
-                                                        <span className="font-semibold text-slate-700">{typeof value === 'number' ? value + '/10' : value}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        <div className="text-sm text-slate-600">
-                                            <span className="font-medium text-slate-700">Feedback: </span>
-                                            {interview.feedback}
+                                    <div>
+                                        <h3 className="font-semibold text-slate-900 capitalize">
+                                            {interview.round_type} Interview
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <Calendar size={12} />
+                                            {new Date(interview.created_at).toLocaleString()}
+                                            <span className="text-slate-300">|</span>
+                                            <span>User ID: {interview.user_id?.slice(0, 8)}...</span>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
 
-                            {!interviews.some(i => i.round_type === 'director') && (
-                                <button
-                                    onClick={() => { setInitialRoundType('director'); setEditingInterview(undefined); setIsModalOpen(true); }}
-                                    className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-                                >
-                                    <Plus size={16} />
-                                    Add Director Interview
-                                </button>
-                            )}
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => { setEditingInterview(interview); setShowAddForm(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all"
+                                        title="Edit"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteInterview(interview.id)}
+                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-4 grid md:grid-cols-3 gap-6">
+                                <div className="md:col-span-1 space-y-1">
+                                    <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Overall Score</div>
+                                    <div className={`text-3xl font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {interview.score}%
+                                    </div>
+                                    <div className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${interview.score >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {interview.score >= 70 ? 'PASSED' : 'FAILED'}
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 space-y-3">
+                                    {interview.details && (
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                                            {Object.entries(interview.details).map(([key, value]) => (
+                                                <div key={key} className="bg-slate-50 px-2 py-1.5 rounded border border-slate-100">
+                                                    <div className="text-[10px] text-slate-400 uppercase truncate">{key.replace('_', ' ')}</div>
+                                                    <div className="font-semibold text-slate-700 text-sm">{typeof value === 'number' ? value + '/10' : value}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {interview.feedback && (
+                                        <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg italic border border-slate-100">
+                                            "{interview.feedback}"
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            <InterviewModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                candidateId={id || ''}
-                onSuccess={fetchData}
-                interview={editingInterview}
-                initialRoundType={initialRoundType}
-            />
 
             {candidate && (
                 <EditCandidateModal
