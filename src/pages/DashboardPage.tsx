@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Candidate } from '../types';
-import { Plus, Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2, Clock, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AddCandidateModal from '../components/AddCandidateModal';
 
 const PAGE_SIZE = 10;
 
+interface CandidateWithInterview extends Candidate {
+    interviews?: { scheduled_at: string }[];
+}
+
 export default function DashboardPage() {
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [candidates, setCandidates] = useState<CandidateWithInterview[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed' | 'scheduled'>('all');
     const [page, setPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -28,15 +32,25 @@ export default function DashboardPage() {
     const fetchCandidates = async () => {
         setLoading(true);
         try {
+            // Base query: fetch candidates and their scheduled interviews
             let query = supabase
                 .from('candidates')
-                .select('*', { count: 'exact' });
+                .select('*, interviews(scheduled_at)', { count: 'exact' });
 
             if (searchTerm) {
                 query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
             }
 
-            if (statusFilter !== 'all') {
+            if (statusFilter === 'scheduled') {
+                // If filtering by scheduled, we use an inner join to only get candidates WITH interviews that have a time
+                // Note: !inner forces the filter to apply to the parent row
+                // We filter for interviews that have a scheduled_at (not null)
+                // And ideally in the future, but for now just "scheduled"
+                query = supabase
+                    .from('candidates')
+                    .select('*, interviews!inner(scheduled_at)', { count: 'exact' })
+                    .not('interviews.scheduled_at', 'is', null);
+            } else if (statusFilter !== 'all') {
                 query = query.eq('status', statusFilter);
             }
 
@@ -99,6 +113,7 @@ export default function DashboardPage() {
                     >
                         <option value="all">All Statuses</option>
                         <option value="in_progress">In Progress</option>
+                        <option value="scheduled">Scheduled</option>
                         <option value="completed">Completed</option>
                     </select>
                     <div className="text-sm text-slate-500 whitespace-nowrap">
@@ -115,6 +130,7 @@ export default function DashboardPage() {
                             <tr>
                                 <th className="px-6 py-4 font-semibold text-slate-700">Name</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700">Status</th>
+                                <th className="px-6 py-4 font-semibold text-slate-700">Next Interview</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700">Contact</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700">Date Added</th>
                             </tr>
@@ -122,7 +138,7 @@ export default function DashboardPage() {
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={4} className="h-32 text-center">
+                                    <td colSpan={5} className="h-32 text-center">
                                         <div className="flex justify-center">
                                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-900"></div>
                                         </div>
@@ -130,7 +146,7 @@ export default function DashboardPage() {
                                 </tr>
                             ) : candidates.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center gap-2">
                                             <LayoutList className="h-8 w-8 text-slate-300" />
                                             <p>No candidates found matching your criteria</p>
@@ -138,44 +154,63 @@ export default function DashboardPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                candidates.map((candidate) => (
-                                    <tr
-                                        key={candidate.id}
-                                        onClick={() => navigate(`/candidates/${candidate.id}`)}
-                                        className="hover:bg-slate-50 transition-colors cursor-pointer group"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                                    {candidate.name.charAt(0)}
+                                candidates.map((candidate) => {
+                                    // Find the earliest upcoming scheduled interview
+                                    const nextInterview = candidate.interviews
+                                        ?.filter(i => i.scheduled_at)
+                                        .sort((a, b) => new Date(a.scheduled_at!).getTime() - new Date(b.scheduled_at!).getTime())[0];
+
+                                    return (
+                                        <tr
+                                            key={candidate.id}
+                                            onClick={() => navigate(`/candidates/${candidate.id}`)}
+                                            className="hover:bg-slate-50 transition-colors cursor-pointer group"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                        {candidate.name.charAt(0)}
+                                                    </div>
+                                                    <div className="font-medium text-slate-900">{candidate.name}</div>
                                                 </div>
-                                                <div className="font-medium text-slate-900">{candidate.name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${candidate.status === 'completed'
-                                                ? 'bg-green-50 text-green-700 border-green-100'
-                                                : 'bg-blue-50 text-blue-700 border-blue-100'
-                                                }`}>
-                                                {candidate.status === 'completed' ? (
-                                                    <CheckCircle2 size={12} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${candidate.status === 'completed'
+                                                    ? 'bg-green-50 text-green-700 border-green-100'
+                                                    : 'bg-blue-50 text-blue-700 border-blue-100'
+                                                    }`}>
+                                                    {candidate.status === 'completed' ? (
+                                                        <CheckCircle2 size={12} />
+                                                    ) : (
+                                                        <Clock size={12} />
+                                                    )}
+                                                    {candidate.status === 'completed' ? 'Completed' : 'In Progress'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {nextInterview ? (
+                                                    <div className="flex items-center gap-2 text-purple-600 bg-purple-50 px-2 py-1 rounded border border-purple-100 w-fit">
+                                                        <Calendar size={12} />
+                                                        <span className="text-xs font-medium">
+                                                            {new Date(nextInterview.scheduled_at!).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                                        </span>
+                                                    </div>
                                                 ) : (
-                                                    <Clock size={12} />
+                                                    <span className="text-slate-400 text-xs">-</span>
                                                 )}
-                                                {candidate.status === 'completed' ? 'Completed' : 'In Progress'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-500">
-                                            <div className="flex flex-col">
-                                                <span>{candidate.email}</span>
-                                                <span className="text-xs text-slate-400">{candidate.phone}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-500">
-                                            {new Date(candidate.created_at).toLocaleDateString()}
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500">
+                                                <div className="flex flex-col">
+                                                    <span>{candidate.email}</span>
+                                                    <span className="text-xs text-slate-400">{candidate.phone}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500">
+                                                {new Date(candidate.created_at).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
