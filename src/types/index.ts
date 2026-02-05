@@ -21,4 +21,22 @@ export interface Interview {
     score: number;
     feedback: string;
     user_id: string;
+    details?: TechnicalScoreBreakdown | DirectorScoreBreakdown;
+}
+
+export interface TechnicalScoreBreakdown {
+    programming_fundamentals: number;
+    database_system: number;
+    code_quality: number;
+    dsa: number;
+    cicd: number;
+    error_handling: number;
+}
+
+export interface DirectorScoreBreakdown {
+    personality: number;
+    communication: number;
+    team_work: number;
+    problem_solving: number;
+    prompt_engineering: number;
 }

@@ -165,13 +165,25 @@ export default function CandidateDetails() {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                         <div>
                                             <span className="text-sm font-medium text-slate-700">Score: </span>
                                             <span className={`font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {interview.score}/100
                                             </span>
                                         </div>
+
+                                        {interview.details && (
+                                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-slate-200">
+                                                {Object.entries(interview.details).map(([key, value]) => (
+                                                    <div key={key} className="flex justify-between items-center text-xs">
+                                                        <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
+                                                        <span className="font-semibold text-slate-700">{typeof value === 'number' ? value + '/10' : value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
                                         <div className="text-sm text-slate-600">
                                             <span className="font-medium text-slate-700">Feedback: </span>
                                             {interview.feedback}
@@ -190,77 +202,11 @@ export default function CandidateDetails() {
                         </div>
                     </div>
 
-                    {/* 2. HR Round */}
+                    {/* 2. Director Round */}
                     <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">2</div>
-                                <h3 className="text-lg font-bold text-slate-900">HR Interview</h3>
-                            </div>
-                            {interviews.some(i => i.round_type === 'hr') ? (
-                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                                    <Check size={14} /> Completed
-                                </span>
-                            ) : (
-                                <span className="text-slate-400 text-sm">Not Started</span>
-                            )}
-                        </div>
-
-                        <div className="pl-12">
-                            {interviews.filter(i => i.round_type === 'hr').map(interview => (
-                                <div key={interview.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                                            <Calendar size={14} />
-                                            {new Date(interview.created_at).toLocaleDateString()}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => { setEditingInterview(interview); setInitialRoundType(undefined); setIsModalOpen(true); }}
-                                                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Edit2 size={14} /> Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteInterview(interview.id)}
-                                                className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1"
-                                            >
-                                                <Trash2 size={14} /> Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div>
-                                            <span className="text-sm font-medium text-slate-700">Score: </span>
-                                            <span className={`font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
-                                                {interview.score}/100
-                                            </span>
-                                        </div>
-                                        <div className="text-sm text-slate-600">
-                                            <span className="font-medium text-slate-700">Feedback: </span>
-                                            {interview.feedback}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {!interviews.some(i => i.round_type === 'hr') && (
-                                <button
-                                    onClick={() => { setInitialRoundType('hr'); setEditingInterview(undefined); setIsModalOpen(true); }}
-                                    className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-                                >
-                                    <Plus size={16} />
-                                    Add HR Interview
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 3. Director Round */}
-                    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">3</div>
                                 <h3 className="text-lg font-bold text-slate-900">Director Interview</h3>
                             </div>
                             {interviews.some(i => i.round_type === 'director') ? (
@@ -295,13 +241,25 @@ export default function CandidateDetails() {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                         <div>
                                             <span className="text-sm font-medium text-slate-700">Score: </span>
                                             <span className={`font-bold ${interview.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {interview.score}/100
                                             </span>
                                         </div>
+
+                                        {interview.details && (
+                                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-slate-200">
+                                                {Object.entries(interview.details).map(([key, value]) => (
+                                                    <div key={key} className="flex justify-between items-center text-xs">
+                                                        <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
+                                                        <span className="font-semibold text-slate-700">{typeof value === 'number' ? value + '/10' : value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
                                         <div className="text-sm text-slate-600">
                                             <span className="font-medium text-slate-700">Feedback: </span>
                                             {interview.feedback}
@@ -311,20 +269,13 @@ export default function CandidateDetails() {
                             ))}
 
                             {!interviews.some(i => i.round_type === 'director') && (
-                                interviews.some(i => i.round_type === 'hr') ? (
-                                    <button
-                                        onClick={() => { setInitialRoundType('director'); setEditingInterview(undefined); setIsModalOpen(true); }}
-                                        className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-                                    >
-                                        <Plus size={16} />
-                                        Add Director Interview
-                                    </button>
-                                ) : (
-                                    <span className="flex items-center gap-2 text-slate-400 text-sm">
-                                        <Plus size={16} />
-                                        Complete previous round first
-                                    </span>
-                                )
+                                <button
+                                    onClick={() => { setInitialRoundType('director'); setEditingInterview(undefined); setIsModalOpen(true); }}
+                                    className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                    <Plus size={16} />
+                                    Add Director Interview
+                                </button>
                             )}
                         </div>
                     </div>
